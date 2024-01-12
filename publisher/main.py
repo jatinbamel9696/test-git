@@ -34,25 +34,35 @@ def publishFolder(folder, login, password, parentPageID=None):
     # ... (same as before)
 
 def publishReleaseToConfluence(login, password, release_notes_path):
+    # ... (same as before)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--login', help='Login with "" is mandatory', required=True)
+    parser.add_argument('--password', help='Password with "" is mandatory', required=True)
+    parser.add_argument('--release-notes', help='Path to release notes file', required=True)
+    args = parser.parse_args()
+    input_arguments = vars(args)
+
     # Search for the Confluence page named "jatin-test"
-    search_result = searchPages(login=login, password=password, title="jatin-test")
+    search_result = searchPages(login=input_arguments['login'], password=input_arguments['password'], title="jatin-test")
 
     # If the page exists, delete it
     if search_result:
-        deletePages(pagesIDList=search_result, login=login, password=password)
+        deletePages(pagesIDList=search_result, login=input_arguments['login'], password=input_arguments['password'])
 
     # Create a new Confluence page with release notes content
     release_notes_content = ""
-    with open(release_notes_path, 'r', encoding="utf-8") as release_notes_file:
+    with open(input_arguments['release_notes'], 'r', encoding="utf-8") as release_notes_file:
         release_notes_content = release_notes_file.read()
 
     # Create a new Confluence page with the release notes content
     createPage(title="jatin-test", content=markdown.markdown(release_notes_content, extensions=['markdown.extensions.tables', 'fenced_code']),
-               parentPageID=None, login=login, password=password)
+               parentPageID=None, login=input_arguments['login'], password=input_arguments['password'])
 
     # If do exist files to upload as attachments
     files_to_upload = []
-    for entry in os.scandir(os.path.dirname(release_notes_path)):
+    for entry in os.scandir(os.path.dirname(input_arguments['release_notes'])):
         if entry.is_file() and entry.name.lower().endswith('.md'):
             with open(entry.path, 'r', encoding="utf-8") as md_file:
                 for line in md_file:
@@ -67,24 +77,13 @@ def publishReleaseToConfluence(login, password, release_notes_path):
     # If there are files to upload, attach them to the page
     if files_to_upload:
         for file in files_to_upload:
-            image_path = os.path.join(os.path.dirname(release_notes_path), file)
+            image_path = os.path.join(os.path.dirname(input_arguments['release_notes']), file)
             if os.path.isfile(image_path):
                 logging.info("Attaching file: " + image_path + "  to the page: jatin-test")
                 with open(image_path, 'rb') as attached_file:
                     attachFile(pageIdForFileAttaching=search_result[0],
                                attachedFile=attached_file,
-                               login=login,
-                               password=password)
+                               login=input_arguments['login'],
+                               password=input_arguments['password'])
             else:
                 logging.error("File: " + str(image_path) + "  not found. Nothing to attach")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--login', help='Login with "" is mandatory', required=True)
-    parser.add_argument('--password', help='Password with "" is mandatory', required=True)
-    parser.add_argument('--release-notes', help='Path to release notes file', required=True)
-    args = parser.parse_args()
-    input_arguments = vars(args)
-
-    publishReleaseToConfluence(login=input_arguments['login'], password=input_arguments['password'],
-                               release_notes_path=input_arguments['release_notes'])
