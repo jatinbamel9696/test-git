@@ -9,6 +9,7 @@ def get_release_info(repo, release_id):
 def update_confluence(api_url, page_id, content):
     # Implement logic to update Confluence page using REST API
     # Use the provided 'api_url', 'page_id', and 'content'
+    pass  # Placeholder, replace with actual logic
 
 def main():
     gh_token = os.getenv("GH_TOKEN")
