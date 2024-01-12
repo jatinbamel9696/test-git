@@ -1,32 +1,63 @@
-name: Update Confluence
+name: Release and Confluence
 
 on:
-  release:
-    types:
-      - created
-      - prereleased
+  push:
+    branches:
+      - main
 
 jobs:
-  update-confluence:
+  download-release-and-upload-to-confluence:
     runs-on: ubuntu-latest
+    env:
+      CONFLUENCE_URL:  https://jatin-bamel.atlassian.net/wiki
+      CONFLUENCE_USERNAME: 'jatsingh9696@gmail.com '
+      CONFLUENCE_PASSWORD: 'ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3'
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.8
+    - name: Download Release
+      id: download
+      uses: actions/github-script@v5
+      with:
+        script: |
+          const latestRelease = await github.repos.getLatestRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install requests
+          const downloadURL = latestRelease.data.assets[0].browser_download_url;
+          const response = await axios.get(downloadURL, { responseType: 'arraybuffer' });
 
-      - name: Update Confluence
-        env:
-          GH_TOKEN: 'ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3'
-          CONFLUENCE_API_URL: 'https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287'
-          CONFLUENCE_PAGE_ID: '950287'
-        run: |
-          python update_confluence.py
+          const fs = require('fs');
+          const releasePath = 'downloaded-release.zip';
+          fs.writeFileSync(releasePath, Buffer.from(response.data));
+
+          echo "::set-output name=release_path::${releasePath}";
+
+    - name: Upload to Confluence
+      run: |
+        # Install jq for parsing JSON responses (if not already installed)
+        sudo apt-get install jq -y
+
+        # Replace these values with your Confluence space key, page ID, and attachment name
+        CONFLUENCE_SPACE_KEY="testj3"
+        CONFLUENCE_PAGE_ID="950287"
+        ATTACHMENT_NAME="downloaded-release.zip"
+
+        # Get Confluence authentication token
+        CONFLUENCE_TOKEN=$(curl -s -u "${CONFLUENCE_USERNAME}:${CONFLUENCE_PASSWORD}" \
+                           "${CONFLUENCE_URL}/rest/auth/1/session" \
+                           -H "Content-Type: application/json" \
+                           -d '{"username": "${CONFLUENCE_URL}", "password": "${CONFLUENCE_PASSWORD}"}' \
+                           | jq -r '.session.value')
+
+        # Upload the file to Confluence
+        curl -u "${CONFLUENCE_USERNAME}:${CONFLUENCE_PASSWORD}" \
+             -X POST \
+             -H "X-Atlassian-Token: no-check" \
+             -H "Content-Type: multipart/form-data" \
+             -F "file=@${{ env.RELEASE_PATH }}" \
+             "${CONFLUENCE_URL}/rest/api/content/${CONFLUENCE_PAGE_ID}/child/attachment?filename=${ATTACHMENT_NAME}" \
+             -H "Authorization: Bearer ${CONFLUENCE_TOKEN}"
