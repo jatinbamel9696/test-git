@@ -31,8 +31,8 @@ jobs:
         id: increment-version
         run: |
           CONFLUENCE_URL="https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287"
-          CONFLUENCE_USERNAME="${{ secrets.CONFLUENCE_LOGIN }}"
-          CONFLUENCE_PASSWORD="${{ secrets.CONFLUENCE_PASSWORD }}"
+          CONFLUENCE_USERNAME="jatsingh9696@gmail.com"
+          CONFLUENCE_PASSWORD="ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3"
   
           RESPONSE=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -H "Accept: application/json" $CONFLUENCE_URL)
           echo "Confluence Response: $RESPONSE"
