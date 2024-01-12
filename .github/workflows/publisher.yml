@@ -34,6 +34,6 @@ jobs:
         LOGIN: ${{secrets.confluence_login }}
         PASSWORD: ${{secrets.confluence_password }}
        # LOGIN: jatsingh9696@gmail.com
-        #PASSWORD: ATATT3xFfGF0geElBSZ7W09Ye56M6M4Hwhr83opRJo48mifJBx5pPfc5bw_ahFgLxHa0GFoTS1eCaA7eqBowmO9mrYdxlhK4vRovBDGfHdfBkuMMrMCViPYyCEz0eGo-00NZVREfcSfywj1HvJo8mfKREyNIYKB0Akz7KPDVWf1FhMtt3giEiYc=6F694965
-      # run: |
-      #   python3 ./publisher/main.py --login="$LOGIN" --password="$PASSWORD"
+       # PASSWORD: ATATT3xFfGF0geElBSZ7W09Ye56M6M4Hwhr83opRJo48mifJBx5pPfc5bw_ahFgLxHa0GFoTS1eCaA7eqBowmO9mrYdxlhK4vRovBDGfHdfBkuMMrMCViPYyCEz0eGo-00NZVREfcSfywj1HvJo8mfKREyNIYKB0Akz7KPDVWf1FhMtt3giEiYc=6F694965
+      run: |
+        python3 ./publisher/main.py --login="$LOGIN" --password="$PASSWORD"
