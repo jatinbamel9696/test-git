@@ -1,11 +1,7 @@
+import os
 import argparse
 import logging
-import os
-import markdown
-import re
-import json
 import requests
-from urllib3.exceptions import InsecureRequestWarning
 from requests.auth import HTTPBasicAuth
 from config.getconfig import getConfig
 
@@ -16,8 +12,6 @@ def getConfig():
 
 CONFIG = getConfig()
 
-# ... (same as before)
-
 def searchPages(login, password, title):
     # ... (same as before)
 
@@ -27,63 +21,36 @@ def deletePages(pagesIDList, login, password):
 def createPage(title, content, parentPageID, login, password):
     # ... (same as before)
 
-def attachFile(pageIdForFileAttaching, attachedFile, login, password):
-    # ... (same as before)
+def publishReleaseToConfluence(login, password, release_notes):
+    # Search for the Confluence page
+    search_result = searchPages(login=login, password=password, title=CONFIG["CONFLUENCE_PAGE_TITLE"])
 
-def publishFolder(folder, login, password, parentPageID=None):
-    # ... (same as before)
+    # If the page exists, delete it
+    if search_result:
+        deletePages(pagesIDList=search_result, login=login, password=password)
 
-def publishReleaseToConfluence(login, password, release_notes_path):
-    # ... (same as before)
+    # Create a new Confluence page with release notes content
+    createPage(title=CONFIG["CONFLUENCE_PAGE_TITLE"],
+               content=release_notes,
+               parentPageID=CONFIG["CONFLUENCE_PARENT_PAGE_ID"],
+               login=login,
+               password=password)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--login', help='Login with "" is mandatory', required=True)
     parser.add_argument('--password', help='Password with "" is mandatory', required=True)
-    parser.add_argument('--release-notes', help='Path to release notes file', required=True)
+    parser.add_argument('--github-token', help='GitHub token for authentication', required=True)
     args = parser.parse_args()
     input_arguments = vars(args)
 
-    # Search for the Confluence page named "jatin-test"
-    search_result = searchPages(login=input_arguments['login'], password=input_arguments['password'], title="jatin-test")
+    # Fetch the latest release notes from GitHub
+    headers = {'Authorization': f'token {input_arguments["github_token"]}'}
+    response = requests.get(f'https://api.github.com/repos/your-username/your-repo/releases/latest', headers=headers)
+    release_data = response.json()
+    release_notes = release_data.get('body', '')
 
-    # If the page exists, delete it
-    if search_result:
-        deletePages(pagesIDList=search_result, login=input_arguments['login'], password=input_arguments['password'])
-
-    # Create a new Confluence page with release notes content
-    release_notes_content = ""
-    with open(input_arguments['release_notes'], 'r', encoding="utf-8") as release_notes_file:
-        release_notes_content = release_notes_file.read()
-
-    # Create a new Confluence page with the release notes content
-    createPage(title="jatin-test", content=markdown.markdown(release_notes_content, extensions=['markdown.extensions.tables', 'fenced_code']),
-               parentPageID=None, login=input_arguments['login'], password=input_arguments['password'])
-
-    # If do exist files to upload as attachments
-    files_to_upload = []
-    for entry in os.scandir(os.path.dirname(input_arguments['release_notes'])):
-        if entry.is_file() and entry.name.lower().endswith('.md'):
-            with open(entry.path, 'r', encoding="utf-8") as md_file:
-                for line in md_file:
-                    # Search for images in each line and ignore http/https image links
-                    result = re.findall("\A!\[.*]\((?!http)(.*)\)", line)
-                    if bool(result):
-                        result = str(result).split('\'')[1]
-                        result = str(result).split('/')[-1]
-                        logging.debug("Found file for attaching: " + result)
-                        files_to_upload.append(result)
-
-    # If there are files to upload, attach them to the page
-    if files_to_upload:
-        for file in files_to_upload:
-            image_path = os.path.join(os.path.dirname(input_arguments['release_notes']), file)
-            if os.path.isfile(image_path):
-                logging.info("Attaching file: " + image_path + "  to the page: jatin-test")
-                with open(image_path, 'rb') as attached_file:
-                    attachFile(pageIdForFileAttaching=search_result[0],
-                               attachedFile=attached_file,
-                               login=input_arguments['login'],
-                               password=input_arguments['password'])
-            else:
-                logging.error("File: " + str(image_path) + "  not found. Nothing to attach")
+    # Publish release notes to Confluence
+    publishReleaseToConfluence(login=input_arguments['login'],
+                               password=input_arguments['password'],
+                               release_notes=release_notes)
