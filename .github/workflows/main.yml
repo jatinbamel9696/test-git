@@ -1,31 +1,22 @@
-name: Deploy Release to Confluence
+name: Download Release
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types:
+      - created
 
 jobs:
-  deploy:
+  download-release:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-
-    - name: Install dependencies
+    - name: Download Release
       run: |
-        python -m pip install --upgrade pip
-        pip install requests
+        DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
+        curl -LJO $DOWNLOAD_URL
 
-    - name: Fetch Latest Release
-      run: |
-        python fetch_release.py
-
-
+    - name: Print Message
+      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
