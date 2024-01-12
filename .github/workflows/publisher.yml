@@ -1,60 +1,28 @@
-name: Publish Release Notes to Confluence
+name: Update Confluence on Release
 
 on:
   release:
     types:
       - published
 
-permissions:
-  contents: read
-
 jobs:
-  publish:
+  update-confluence:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v2
       with:
         python-version: "3.10"
 
-    - name: Fetch Release Notes
-      id: fetch-release-notes
+    - name: Install dependencies
       run: |
-        RELEASE_NOTES=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .body)
-        echo "Release Notes: $RELEASE_NOTES" > release_notes.md
-    
-        - name: Increment version
-        id: increment-version
-        run: |
-          CONFLUENCE_URL="https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287"
-          CONFLUENCE_USERNAME="jatsingh9696@gmail.com"
-          CONFLUENCE_PASSWORD="ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3"
-  
-          RESPONSE=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -H "Accept: application/json" $CONFLUENCE_URL)
-          echo "Confluence Response: $RESPONSE"
-          
-          # Use 'jq' to extract the version number from the JSON response
-          CURRENT_VERSION=$(echo "$RESPONSE" | jq -r '.version.number // empty')
-          if [ -z "$CURRENT_VERSION" ]; then
-            echo "Failed to extract version number from the Confluence response."
-            exit 1
-          fi
-  
-          NEW_VERSION=$((CURRENT_VERSION + 1))
-          echo "New Version: $NEW_VERSION"
+        python -m pip install --upgrade pip
+        pip install -r ./publisher/requirements.txt
 
-    - name: Publish Release to Confluence
-      env:
-        CONFLUENCE_URL: "https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287"
-        CONFLUENCE_USERNAME: jatsingh9696@gmail.com
-        CONFLUENCE_PASSWORD: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
+    - name: Update Confluence on Release
       run: |
-        # Prepare data for updating content
-        DATA=$(jq -n --argjson version $NEW_VERSION --arg body "$(cat release_notes.md)" '{"version": $version, "body": { "storage": { "value": $body, "representation": "storage" }}}')
-
-        # Update Confluence page
-        curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -X PUT -H 'Content-Type: application/json' -d "$DATA" $CONFLUENCE_URL
+        python update_confluence.py "release" "v1.0.0" "Release notes for v1.0.0"
