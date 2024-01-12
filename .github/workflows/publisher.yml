@@ -1,10 +1,9 @@
 name: Publish
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types:
+      - published
 
 permissions:
   contents: read
@@ -29,11 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r ./publisher/requirements.txt
 
-    - name: Publish MD files to the Confluence space
+    - name: Publish Release to Confluence
       env:
-        LOGIN: ${{secrets.confluence_login }}
-        PASSWORD: ${{secrets.confluence_password }}
-       # LOGIN: jatsingh9696@gmail.com
-       # PASSWORD: ATATT3xFfGF0geElBSZ7W09Ye56M6M4Hwhr83opRJo48mifJBx5pPfc5bw_ahFgLxHa0GFoTS1eCaA7eqBowmO9mrYdxlhK4vRovBDGfHdfBkuMMrMCViPYyCEz0eGo-00NZVREfcSfywj1HvJo8mfKREyNIYKB0Akz7KPDVWf1FhMtt3giEiYc=6F694965
+        LOGIN: jatsingh9696@gmail.com
+        PASSWORD: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
+        # LOGIN: ${{secrets.confluence_login}}
+        # PASSWORD: ${{secrets.confluence_password}}
       run: |
-        python3 ./publisher/main.py --login="$LOGIN" --password="$PASSWORD"
+        python3 ./publisher/main.py --login="$LOGIN" --password="$PASSWORD" --release-notes="./path/to/release_notes.md"
