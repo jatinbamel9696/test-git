@@ -2,8 +2,8 @@ import os
 import requests
 import json
 
-def fetch_latest_release(owner, repo, token):
-    headers = {'Authorization': f'token {token}'}
+def fetch_latest_release(owner, repo):
+    headers = {'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
     response = requests.get(f'https://api.github.com/repos/{owner}/{repo}/releases/latest', headers=headers)
 
     if response.status_code == 200:
@@ -14,10 +14,9 @@ def fetch_latest_release(owner, repo, token):
         return None
 
 if __name__ == "__main__":
-    repo_owner, repo_name = os.getenv("GITHUB_REPOSITORY").split("/")
-    github_token = os.getenv("GITHUB_TOKEN")
+    repo_owner, repo_name = os.getenv("GITHUB_REPOSITORY").split()
 
-    latest_release = fetch_latest_release(repo_owner, repo_name, github_token)
+    latest_release = fetch_latest_release(repo_owner, repo_name)
 
     if latest_release:
         print("Latest Release Information:")
