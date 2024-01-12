@@ -1,4 +1,4 @@
-name: Publish
+name: Publish Release Notes to Confluence
 
 on:
   release:
@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   publish:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -24,15 +23,27 @@ jobs:
 
     - name: Install dependencies
       run: |
-        ls -la
         python -m pip install --upgrade pip
         pip install -r ./publisher/requirements.txt
 
+    - name: Fetch Release Notes
+      id: fetch-release-notes
+      run: |
+        RELEASE_NOTES=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .body)
+        echo "Release Notes: $RELEASE_NOTES" > release_notes.md
+
     - name: Publish Release to Confluence
       env:
-        LOGIN: jatsingh9696@gmail.com
-        PASSWORD: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
-        # LOGIN: ${{secrets.confluence_login}}
-        # PASSWORD: ${{secrets.confluence_password}}
+        CONFLUENCE_URL: "https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287"
+        CONFLUENCE_USERNAME: jatsingh9696@gmail.com
+        CONFLUENCE_PASSWORD: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
       run: |
-        python3 ./publisher/main.py --login="$LOGIN" --password="$PASSWORD" --release-notes="./path/to/release_notes.md"
+        # Increment version
+        CURRENT_VERSION=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -H "Accept: application/json" $CONFLUENCE_URL | jq -r '.version.number')
+        NEW_VERSION=$((CURRENT_VERSION + 1))
+        
+        # Prepare data for updating content
+        DATA=$(jq -n --argjson version $NEW_VERSION --arg body "$(cat release_notes.md)" '{"version": $version, "body": { "storage": { "value": $body, "representation": "storage" }}}')
+        
+        # Update Confluence page
+        curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -X PUT -H 'Content-Type: application/json' -d "$DATA" $CONFLUENCE_URL
