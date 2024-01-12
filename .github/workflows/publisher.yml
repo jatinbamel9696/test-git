@@ -26,6 +26,26 @@ jobs:
       run: |
         RELEASE_NOTES=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .body)
         echo "Release Notes: $RELEASE_NOTES" > release_notes.md
+    
+        - name: Increment version
+        id: increment-version
+        run: |
+          CONFLUENCE_URL="https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287"
+          CONFLUENCE_USERNAME="${{ secrets.CONFLUENCE_LOGIN }}"
+          CONFLUENCE_PASSWORD="${{ secrets.CONFLUENCE_PASSWORD }}"
+  
+          RESPONSE=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -H "Accept: application/json" $CONFLUENCE_URL)
+          echo "Confluence Response: $RESPONSE"
+          
+          # Use 'jq' to extract the version number from the JSON response
+          CURRENT_VERSION=$(echo "$RESPONSE" | jq -r '.version.number // empty')
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "Failed to extract version number from the Confluence response."
+            exit 1
+          fi
+  
+          NEW_VERSION=$((CURRENT_VERSION + 1))
+          echo "New Version: $NEW_VERSION"
 
     - name: Publish Release to Confluence
       env:
@@ -33,12 +53,8 @@ jobs:
         CONFLUENCE_USERNAME: jatsingh9696@gmail.com
         CONFLUENCE_PASSWORD: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
       run: |
-        # Increment version
-        CURRENT_VERSION=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -H "Accept: application/json" $CONFLUENCE_URL | jq -r '.version.number')
-        NEW_VERSION=$((CURRENT_VERSION + 1))
-        
         # Prepare data for updating content
         DATA=$(jq -n --argjson version $NEW_VERSION --arg body "$(cat release_notes.md)" '{"version": $version, "body": { "storage": { "value": $body, "representation": "storage" }}}')
-        
+
         # Update Confluence page
         curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_PASSWORD -X PUT -H 'Content-Type: application/json' -d "$DATA" $CONFLUENCE_URL
