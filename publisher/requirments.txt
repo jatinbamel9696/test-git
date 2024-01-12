@@ -1,4 +1,0 @@
-# This is a placeholder requirements.txt file.
-# List your actual dependencies here.
-
-requests==2.26.0

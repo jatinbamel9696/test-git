@@ -1,40 +1,28 @@
 import requests
-import json
 import os
-import sys
+from github import Github
 
-# Set your Confluence details
-confluence_url = "https://jatin-bamel.atlassian.net/wiki/rest/api/content"
-page_id = "950287"  # Replace with your actual page_id
-space_key = "testj3"
+def get_release_info(repo, release_id):
+    release = repo.get_release(release_id)
+    return f"## {release.tag_name}\n\n{release.body}"
 
-# Set your Confluence API token directly (for testing purposes)
-api_token = "YOUR_CONFLUENCE_API_TOKEN"
+def update_confluence(api_url, page_id, content):
+    # Implement logic to update Confluence page using REST API
+    # Use the provided 'api_url', 'page_id', and 'content'
 
-# Create a Confluence REST API URL
-api_url = f"{confluence_url}/{page_id}"
+def main():
+    gh_token = os.getenv("GH_TOKEN")
+    confluence_api_url = os.getenv("CONFLUENCE_API_URL")
+    confluence_page_id = os.getenv("CONFLUENCE_PAGE_ID")
 
-# Set the headers for authentication
-headers = {
-    "Authorization": f"Bearer {api_token}",
-    "Content-Type": "application/json",
-}
+    g = Github(gh_token)
+    repo = g.get_repo("your-username/your-repo")  # Replace with your repository information
 
-# Get the current page content
-response = requests.get(api_url, headers=headers)
-page_data = response.json()
+    # Assuming the latest release is the most recent one
+    release_id = repo.get_latest_release().id
+    release_info = get_release_info(repo, release_id)
 
-# Update the page content with release information
-page_data["version"]["number"] += 1
-page_data["title"] = "Release v1.0.0"
-page_data["body"]["storage"]["value"] = "<p>Release notes for v1.0.0</p>"
-page_data["body"]["storage"]["representation"] = "storage"
+    update_confluence(confluence_api_url, confluence_page_id, release_info)
 
-# Update the Confluence page
-update_response = requests.put(api_url, headers=headers, json=page_data)
-
-if update_response.status_code == 200:
-    print("Confluence page updated successfully.")
-else:
-    print(f"Failed to update Confluence page. Status code: {update_response.status_code}")
-    print(update_response.text)
+if __name__ == "__main__":
+    main()

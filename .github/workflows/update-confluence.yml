@@ -1,0 +1,32 @@
+name: Update Confluence
+
+on:
+  release:
+    types:
+      - created
+      - prereleased
+
+jobs:
+  update-confluence:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install requests
+
+      - name: Update Confluence
+        env:
+          GH_TOKEN: 'ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3'
+          CONFLUENCE_API_URL: 'https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287'
+          CONFLUENCE_PAGE_ID: '950287'
+        run: |
+          python update_confluence.py
