@@ -1,0 +1,31 @@
+name: Release Workflow
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  store-release-info:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set Release Info
+      run: |
+        echo "RELEASE_NAME=$(echo $GITHUB_REF | awk -F/ '{print $3}')" >> $GITHUB_ENV
+        echo "RELEASE_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+        echo "RELEASE_BODY=${{ github.event.release.body }}" >> $GITHUB_ENV
+
+  print-release-info:
+    needs: store-release-info
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Print Release Info
+      run: |
+        echo "Release Name: $RELEASE_NAME"
+        echo "Release Tag: $RELEASE_TAG"
+        echo "Release Body: $RELEASE_BODY"
