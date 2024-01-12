@@ -1,31 +1,54 @@
-name: Release Workflow
+name: Release and Confluence Upload
 
 on:
   release:
     types:
-      - created
+      - released
 
 jobs:
-  store-release-info:
+  release_and_upload:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Set Release Info
-      run: |
-        echo "RELEASE_NAME=$(echo $GITHUB_REF | awk -F/ '{print $3}')" >> $GITHUB_ENV
-        echo "RELEASE_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-        echo "RELEASE_BODY=${{ github.event.release.body }}" >> $GITHUB_ENV
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 14
 
-  print-release-info:
-    needs: store-release-info
-    runs-on: ubuntu-latest
+      - name: Install jq
+        run: sudo apt-get install jq
 
-    steps:
-    - name: Print Release Info
-      run: |
-        echo "Release Name: $RELEASE_NAME"
-        echo "Release Tag: $RELEASE_TAG"
-        echo "Release Body: $RELEASE_BODY"
+      - name: Extract Release Information
+        id: extract_release
+        run: |
+          echo "Release Version: ${{ github.event.release.tag_name }}"
+          echo "Release Name: ${{ github.event.release.name }}"
+          echo "Release Body: ${{ github.event.release.body }}"
+          echo "Assets:"
+          for asset in ${{ toJson(github.event.release.assets) }}; do
+            echo "  - Name: $(echo $asset | jq -r .name), URL: $(echo $asset | jq -r .browser_download_url)"
+          done
+          echo "::set-output name=release_body::${{ github.event.release.body }}"
+          echo "::set-output name=release_assets::${{ toJson(github.event.release.assets) }}"
+
+      - name: Upload to Confluence
+        uses: atlassian/gajira-upload-confluence@v1
+        with:
+          confluence-url: https://jatin-bamel.atlassian.net/wiki/
+          username: jatsingh9696@gmail.com
+          password: ATATT3xFfGF0ZwRpXf8WhR6D0SgTVcaWgyIeFAdsPeFIxLbapNDu0XbWGhDrcZ-8F4QKOL5TfvSpa0qYZz_OODFVngAP1Ej6OGySl68n3i0ZTCeAPIzDfsdUg0RcCH2JTXZzHhwINXoqArLgWfQgZvCYfOH6mum0JLXAbV1xKi-2xH52Vu_9gCM=9B8E2AB3
+          space: "testj3"
+          title: "test-release"
+          parent-id: "950287"  # Optional, remove if not needed
+          file: |
+            # Format the release information as desired
+            Release Version: ${{ steps.extract_release.outputs.release_version }}
+            Release Name: ${{ steps.extract_release.outputs.release_name }}
+            Release Body: ${{ steps.extract_release.outputs.release_body }}
+            
+            # Display release assets
+            Release Assets:
+            ${{ steps.extract_release.outputs.release_assets }}
