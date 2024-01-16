@@ -16,7 +16,7 @@ jobs:
       - name: Get latest release
         id: get_release
         run: |
-          asset_url=$(gh release download $GITHUB_REPOSITORY --pattern "*.md" --list | jq -r '.[0].browser_download_url')
+          asset_url=$(gh release list $GITHUB_REPOSITORY --json assets[0].browser_download_url --jq '.[0].assets[0].browser_download_url')
           echo "Download URL: $asset_url"
         shell: bash
 
