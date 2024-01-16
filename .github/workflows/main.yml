@@ -16,8 +16,12 @@ jobs:
       - name: Get latest release
         id: get_release
         run: |
-          asset_url=$(gh release list $GITHUB_REPOSITORY | jq -r '.[0].assets[0].browser_download_url')
+          asset_url=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | \
+            jq -r '.assets[0].browser_download_url')
           echo "Download URL: $asset_url"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
 
       - name: Download release asset
@@ -57,6 +61,7 @@ jobs:
                      }
                    }' \
                https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
+
         env:
           CONFLUENCE_USERNAME: jatsingh9696@gmail.com
           CONFLUENCE_API_TOKEN: ATATT3xFfGF03TKfEACLeEGHkY-6qePoYewJ7OpzzRzHQ07ZkFFB5NCDE1pX0PY0O3T8XbZeyOdhbk0XE9eNzvmC8e9EM6iVcks6dV0whIn3NRc81KyJw9ZF2WeoFIAC2r8HYAyPRXaX4FrSwhyar21l-WEO_tVxKrMVB5EFrym9DYgJeyKLYK4=62672B17
