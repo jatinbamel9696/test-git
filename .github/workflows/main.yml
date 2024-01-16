@@ -13,13 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get latest release
-        id: get_release
+      - name: Get latest release assets
+        id: get_release_assets
         run: |
-          api_response=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest")
-          echo "API Response: $api_response"
-          asset_url=$(echo "$api_response" | jq -r '.assets[0].browser_download_url')
+          assets_url=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | \
+            jq -r '.assets_url')
+          assets_response=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" "$assets_url")
+          asset_url=$(echo "$assets_response" | jq -r '.[0].browser_download_url')
           echo "Download URL: $asset_url"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
