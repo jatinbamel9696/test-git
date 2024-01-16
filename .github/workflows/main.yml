@@ -26,7 +26,7 @@ jobs:
 
       - name: Download release asset
         run: |
-          wget -O release.zip $asset_url
+          wget -O release.zip "$asset_url"
           unzip release.zip -d downloaded_assets
 
       - name: Convert Markdown to HTML
