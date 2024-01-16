@@ -16,9 +16,10 @@ jobs:
       - name: Get latest release
         id: get_release
         run: |
-          asset_url=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | \
-            jq -r '.assets[0].browser_download_url')
+          api_response=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest")
+          echo "API Response: $api_response"
+          asset_url=$(echo "$api_response" | jq -r '.assets[0].browser_download_url')
           echo "Download URL: $asset_url"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
