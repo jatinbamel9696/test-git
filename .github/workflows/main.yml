@@ -1,4 +1,4 @@
-name: Download Release, Convert Markdown to HTML, and Publish to Confluence
+name: Download Release Assets
 
 on:
   push:
@@ -6,25 +6,27 @@ on:
       - main
 
 jobs:
-  download_convert_and_publish:
+  download_assets:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Get latest release assets
         id: get_release_assets
         run: |
-          assets_url=$(curl -sH "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | \
-            jq -r '.assets_url')
-          assets_response=$(curl --insecure -sH "Authorization: Bearer $GITHUB_TOKEN" "$assets_url")
-          asset_url=$(echo "$assets_response" | jq -r '.[0].browser_download_url')
+          asset_url=$(gh release view $GITHUB_REPOSITORY --json assets[0].browser_download_url --jq '.assets[0].browser_download_url')
           echo "Download URL: $asset_url"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
 
       - name: Download release asset
         run: |
