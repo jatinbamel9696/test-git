@@ -1,22 +1,71 @@
-name: Download Release
+name: Download Release, Convert Markdown to HTML, and Publish to Confluence
 
 on:
-  release:
-    types:
-      - created
+  push:
+    branches:
+      - main
 
 jobs:
-  download-release:
+  download_convert_and_publish:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Download Release
-      run: |
-        DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
-        curl -LJO $DOWNLOAD_URL
+      - name: Set up GitHub CLI
+        uses: actions/setup-gh@v0.6.0
+        with:
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Print Message
-      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
+      - name: Get latest release
+        id: get_release
+        run: |
+          release_id=$(gh release view $GITHUB_REPOSITORY --json id --jq '.id')
+          echo "Latest release ID: $release_id"
+          asset_url=$(gh release download $GITHUB_REPOSITORY --pattern "*.md" --json browser_download_url --jq '.[0].browser_download_url')
+          echo "Download URL: $asset_url"
+        shell: bash
+
+      - name: Download release asset
+        run: |
+          wget -O release.zip ${{ steps.get_release.outputs.asset_url }}
+          unzip release.zip -d downloaded_assets
+
+      - name: Convert Markdown to HTML
+        run: |
+          pandoc -s -o converted_content.html downloaded_assets/*.md
+
+      - name: Publish to Confluence
+        run: |
+          # Read the converted HTML content
+          html_content=$(cat converted_content.html)
+
+          # Get the current version of the Confluence page
+          current_version=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_API_TOKEN -X GET -H 'Content-Type: application/json' \
+                              https://your-confluence-instance/wiki/rest/api/content/$CONFLUENCE_PAGE_ID | jq -r '.version.number')
+
+          # Increment the version number for the update
+          updated_version=$((current_version + 1))
+
+          # Use cURL to send content to Confluence
+          curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_API_TOKEN -X PUT -H 'Content-Type: application/json' \
+               -d '{
+                     "version": {
+                       "number": '$updated_version'
+                     },
+                     "title": "Your Page Title",
+                     "type": "page",
+                     "body": {
+                       "storage": {
+                         "value": "'"$html_content"'",
+                         "representation": "storage"
+                       }
+                     }
+                   }' \
+               https://your-confluence-instance/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
+
+        env:
+          CONFLUENCE_USERNAME: jatsingh9696@gmail.com
+          CONFLUENCE_API_TOKEN: ATATT3xFfGF03TKfEACLeEGHkY-6qePoYewJ7OpzzRzHQ07ZkFFB5NCDE1pX0PY0O3T8XbZeyOdhbk0XE9eNzvmC8e9EM6iVcks6dV0whIn3NRc81KyJw9ZF2WeoFIAC2r8HYAyPRXaX4FrSwhyar21l-WEO_tVxKrMVB5EFrym9DYgJeyKLYK4=62672B17
+          CONFLUENCE_PAGE_ID: "950287"
