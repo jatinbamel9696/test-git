@@ -26,8 +26,13 @@ jobs:
 
       - name: Download release asset
         run: |
-          wget -O release.zip "$asset_url"
-          unzip release.zip -d downloaded_assets
+          if [ -n "$asset_url" ]; then
+            wget -O release.zip "$asset_url"
+            unzip release.zip -d downloaded_assets
+          else
+            echo "Asset URL is empty. Unable to proceed."
+            exit 1
+          fi
 
       - name: Convert Markdown to HTML
         run: |
@@ -60,6 +65,7 @@ jobs:
                        }
                      }
                    }' \
+               https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
                https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
 
         env:
