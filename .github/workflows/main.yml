@@ -16,14 +16,13 @@ jobs:
       - name: Get latest release
         id: get_release
         run: |
-          release_info=$(gh release view $GITHUB_REPOSITORY --json assets --jq '.assets[0].browser_download_url')
-          asset_url=$(echo "$release_info" | jq -r '.browser_download_url')
+          asset_url=$(gh release download $GITHUB_REPOSITORY --pattern "*.md" --json browser_download_url --jq '.[0].browser_download_url')
           echo "Download URL: $asset_url"
         shell: bash
 
       - name: Download release asset
         run: |
-          wget -O release.zip $asset_url
+          wget -O release.zip ${{ steps.get_release.outputs.asset_url }}
           unzip release.zip -d downloaded_assets
 
       - name: Convert Markdown to HTML
