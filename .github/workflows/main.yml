@@ -13,13 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up GitHub CLI
-        uses: actions/setup-gh@v0.6.0
-        with:
-          gh-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh -y
 
       - name: Get latest release
-        id: get_release
         run: |
           release_id=$(gh release view $GITHUB_REPOSITORY --json id --jq '.id')
           echo "Latest release ID: $release_id"
@@ -63,7 +64,7 @@ jobs:
                        }
                      }
                    }' \
-               https://your-confluence-instance/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
+              https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
 
         env:
           CONFLUENCE_USERNAME: jatsingh9696@gmail.com
