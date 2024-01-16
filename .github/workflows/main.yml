@@ -13,16 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Authenticate with GitHub CLI
-        run: |
-          gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
-          gh config set prompt disabled
-
       - name: Get latest release
         id: get_release
         run: |
-          release_id=$(gh release view $GITHUB_REPOSITORY --json id --jq '.id')
-          echo "Latest release ID: $release_id"
+          # Ensure GitHub CLI is up-to-date
+          gh --version
+          gh release view $GITHUB_REPOSITORY --json id --jq '.id'
           asset_url=$(gh release download $GITHUB_REPOSITORY --pattern "*.md" --json browser_download_url --jq '.[0].browser_download_url')
           echo "Download URL: $asset_url"
         shell: bash
