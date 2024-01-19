@@ -1,15 +1,18 @@
-name: Download Release Assets
+name: Publish Release Notes to Confluence
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
 
 jobs:
-  download_assets:
+  publish_release_notes:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Install GitHub CLI
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
@@ -17,62 +20,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Get latest release assets
-        id: get_release_assets
+      - name: Download Release Notes
         run: |
-          asset_url=$(gh release view $GITHUB_REPOSITORY --json assets[0].browser_download_url --jq '.assets[0].browser_download_url')
-          echo "Download URL: $asset_url"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download release asset
-        run: |
-          if [ -n "$asset_url" ]; then
-            wget -O release.zip "$asset_url"
-            unzip release.zip -d downloaded_assets
-          else
-            echo "Asset URL is empty. Unable to proceed."
-            exit 1
-          fi
-
-      - name: Convert Markdown to HTML
-        run: |
-          pandoc -s -o converted_content.html downloaded_assets/*.md
-
+          gh release download ${{ github.event.release.tag_name }} --pattern '*.md' --dir release-notes
+          
       - name: Publish to Confluence
         run: |
-          # Read the converted HTML content
-          html_content=$(cat converted_content.html)
-
-          # Get the current version of the Confluence page
-          current_version=$(curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_API_TOKEN -X GET -H 'Content-Type: application/json' \
-                              https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID | jq -r '.version.number')
-
-          # Increment the version number for the update
-          updated_version=$((current_version + 1))
-
-          # Use cURL to send content to Confluence
-          curl -u $CONFLUENCE_USERNAME:$CONFLUENCE_API_TOKEN -X PUT -H 'Content-Type: application/json' \
-               -d '{
-                     "version": {
-                       "number": '$updated_version'
-                     },
-                     "title": "Your Page Title",
-                     "type": "page",
-                     "body": {
-                       "storage": {
-                         "value": "'"$html_content"'",
-                         "representation": "storage"
-                       }
-                     }
-                   }' \
-               https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
-               https://jatin-bamel.atlassian.net/wiki/rest/api/content/$CONFLUENCE_PAGE_ID
-
+          # Your Confluence publishing script or command goes here
+          # Example: Use cURL to send the release notes to a Confluence page
+          curl -u ${{ secrets.CONFLUENCE_USERNAME }}:${{ secrets.CONFLUENCE_PASSWORD }} -X PUT -H 'Content-Type: application/json' \
+            -d '{"version":{"number":123},"title":"Release Notes","type":"page","body":{"storage":{"value":"$(cat release-notes/*.md)","representation":"storage"}}}' \
+            https://jatin-bamel.atlassian.net/wiki/spaces/testj3/pages/950287
         env:
           CONFLUENCE_USERNAME: jatsingh9696@gmail.com
-          CONFLUENCE_API_TOKEN: ATATT3xFfGF03TKfEACLeEGHkY-6qePoYewJ7OpzzRzHQ07ZkFFB5NCDE1pX0PY0O3T8XbZeyOdhbk0XE9eNzvmC8e9EM6iVcks6dV0whIn3NRc81KyJw9ZF2WeoFIAC2r8HYAyPRXaX4FrSwhyar21l-WEO_tVxKrMVB5EFrym9DYgJeyKLYK4=62672B17
-          CONFLUENCE_PAGE_ID: "950287"
+          CONFLUENCE_PASSWORD: ATATT3xFfGF04edGpSU7uFusXvkXSj3dvPb6XZYGDCGlxM30d-r2t0OfoLv7sTLec4I3DBFoZYEjtmE7f2xts2mtRxKIuSJfbOA89ISMbdJK1Wsmv3ZizFbVRsymh5_nZMWzvseIAVAJ_QDcgyGIvNbA78ZAjPB42_l8Tb1ca1NCWFbfSkg0Pec=2AF4D41F
