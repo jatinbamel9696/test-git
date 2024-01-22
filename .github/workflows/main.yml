@@ -24,7 +24,7 @@ jobs:
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
 
     - name: Print Release Notes
-      run: echo "Release Notes: ${{ env.RELEASE_NOTES }}"
+      run: echo "Release Notes:$RELEASE_NOTES"
 
     - name: Print Message
       run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
