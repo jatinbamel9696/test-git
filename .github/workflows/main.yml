@@ -1,28 +1,28 @@
-name: Release Notes Workflow
+name: Download Release
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - created
 
 jobs:
-  download-release-notes:
+  download-release:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Download Release Notes
-      id: download-notes
+    - name: Download Release
       run: |
-        RELEASE_NOTES=$(gh release notes -R $GITHUB_REPOSITORY)
-        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+        DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
+        curl -LJO $DOWNLOAD_URL
 
-  echo-release-notes:
-    needs: download-release-notes
-    runs-on: ubuntu-latest
+    - name: Get Release Notes
+      run: RELEASE_NOTES=$(gh release view ${GITHUB_REF#refs/tags/} --json notes --repo $GITHUB_REPOSITORY --template '{{.body}}')
 
-    steps:
     - name: Print Release Notes
-      run: echo "${{ env.RELEASE_NOTES }}"
+      run: echo "Release Notes: $RELEASE_NOTES"
+
+    - name: Print Message
+      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
