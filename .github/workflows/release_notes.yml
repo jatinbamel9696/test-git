@@ -19,19 +19,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
         fi
-        gh config set token ${{ secrets.GITHUB_TOKEN }}
-      env:
-       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Download Release
       run: |
         DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
         curl -LJO $DOWNLOAD_URL
 
-    - name: Set Release Notes
+    - name: Get Release Notes
       run: |
-        export RELEASE_NOTES=$(gh release view ${GITHUB_REF#refs/tags/} --json notes --repo $GITHUB_REPOSITORY --template '{{.body}}')
+        RELEASE_NOTES=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${{ github.ref | replace('refs/tags/', '') }}" | \
+          jq -r '.body')
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
     - name: Print Release Notes
       run: |
