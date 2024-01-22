@@ -19,6 +19,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
         fi
+        gh auth login --with-token "${GITHUB_TOKEN}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
