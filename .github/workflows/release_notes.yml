@@ -19,8 +19,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
         fi
+        gh config set token ${{ secrets.GITHUB_TOKEN }}
       env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Download Release
       run: |
