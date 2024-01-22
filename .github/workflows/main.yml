@@ -18,11 +18,13 @@ jobs:
         DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
         curl -LJO $DOWNLOAD_URL
 
-    - name: Get Release Notes
-      run: RELEASE_NOTES=$(gh release view ${GITHUB_REF#refs/tags/} --json notes --repo $GITHUB_REPOSITORY --template '{{.body}}')
+    - name: Set Release Notes
+      run: |
+        export RELEASE_NOTES=$(gh release view ${GITHUB_REF#refs/tags/} --json notes --repo $GITHUB_REPOSITORY --template '{{.body}}')
+        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
 
     - name: Print Release Notes
-      run: echo "Release Notes: $RELEASE_NOTES"
+      run: echo "Release Notes: ${{ env.RELEASE_NOTES }}"
 
     - name: Print Message
       run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
