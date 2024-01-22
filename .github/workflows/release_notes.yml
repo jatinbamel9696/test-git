@@ -11,29 +11,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install GitHub CLI
-      run: |
-        if ! command -v gh &> /dev/null; then
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-          sudo apt-add-repository https://cli.github.com/packages
-          sudo apt-get update
-          sudo apt-get install gh
-        fi
-
-    - name: Download Release
-      run: |
-        DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
-        curl -LJO $DOWNLOAD_URL
-
     - name: Get Release Notes
       run: |
+        RELEASE_TAG=$(echo "${{ github.ref }}" | sed 's/refs\/tags\///')
         RELEASE_NOTES=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-          "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${{ github.ref | replace('refs/tags/', '') }}" | \
+          "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" | \
           jq -r '.body')
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
     - name: Print Release Notes
       run: |
