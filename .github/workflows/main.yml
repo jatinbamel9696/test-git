@@ -1,37 +1,28 @@
-name: Publish Release Notes to Confluence
+name: Release Notes Workflow
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - main
 
 jobs:
-  publish_release_notes:
+  download-release-notes:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-          sudo apt-add-repository https://cli.github.com/packages
-          sudo apt-get update
-          sudo snap install gh
+    - name: Download Release Notes
+      id: download-notes
+      run: |
+        RELEASE_NOTES=$(gh release notes -R $GITHUB_REPOSITORY)
+        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
 
+  echo-release-notes:
+    needs: download-release-notes
+    runs-on: ubuntu-latest
 
-      - name: Download Release Notes
-        run: |
-          gh release download ${{ github.event.release.tag_name }} --pattern '*.md' --dir release-notes
-          
-      - name: Publish to Confluence
-        run: |
-          # Your Confluence publishing script or command goes here
-          # Example: Use cURL to send the release notes to a Confluence page
-          curl -u ${{ secrets.CONFLUENCE_USERNAME }}:${{ secrets.CONFLUENCE_PASSWORD }} -X PUT -H 'Content-Type: application/json' \
-            -d '{"version":{"number":123},"title":"Release Notes","type":"page","body":{"storage":{"value":"$(cat release-notes/*.md)","representation":"storage"}}}' \
-            https://jatin-bamel.atlassian.net/wiki/spaces/testj3/pages/950287
-        env:
-          CONFLUENCE_USERNAME: jatsingh9696@gmail.com
-          CONFLUENCE_PASSWORD: ATATT3xFfGF04edGpSU7uFusXvkXSj3dvPb6XZYGDCGlxM30d-r2t0OfoLv7sTLec4I3DBFoZYEjtmE7f2xts2mtRxKIuSJfbOA89ISMbdJK1Wsmv3ZizFbVRsymh5_nZMWzvseIAVAJ_QDcgyGIvNbA78ZAjPB42_l8Tb1ca1NCWFbfSkg0Pec=2AF4D41F
+    steps:
+    - name: Print Release Notes
+      run: echo "${{ env.RELEASE_NOTES }}"
