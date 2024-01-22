@@ -1,1 +1,46 @@
+name: Download Release
+
+on:
+ workflow_dispatch:
+
+jobs:
+  download-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up GitHub CLI
+      run: |
+        if ! command -v gh &> /dev/null; then
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+        fi
+        gh config set github.token ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Download Release
+      run: |
+        DOWNLOAD_URL="https://github.com/${{ github.repository }}/archive/${{ github.event.release.tag_name }}.tar.gz"
+        curl -LJO $DOWNLOAD_URL
+
+    - name: Set Release Notes
+      run: |
+        export RELEASE_NOTES=$(gh release view ${GITHUB_REF#refs/tags/} --json notes --repo $GITHUB_REPOSITORY --template '{{.body}}')
+        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+
+    - name: Print Release Notes
+      run: |
+        if [ -n "$RELEASE_NOTES" ]; then
+          echo "Release Notes: $RELEASE_NOTES"
+        else
+          echo "Release Notes not available."
+        fi
+
+    - name: Print Message
+      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
 
