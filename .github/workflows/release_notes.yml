@@ -11,23 +11,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Get Release Notes
+    - name: Set up GitHub CLI
       run: |
-        # Extract tag or branch name from GITHUB_REF
-        if [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
-          RELEASE_TAG=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
-        else
-          RELEASE_TAG=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///')
+        if ! command -v gh &> /dev/null; then
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
         fi
-
-        # Retrieve release notes
-        RELEASE_NOTES=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-          "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" | \
-          jq -r '.body')
-          
-        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get Release Notes
+      run: |
+        if [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
+          RELEASE_TAG=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
+          RELEASE_NOTES=$(gh release view ${RELEASE_TAG} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
+        else
+          RELEASE_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///')
+          RELEASE_NOTES=$(gh release view ${RELEASE_BRANCH} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
+        fi
+
+        echo "RELEASE_NOTES=${RELEASE_NOTES}" >> $GITHUB_ENV
 
     - name: Print Release Notes
       run: |
