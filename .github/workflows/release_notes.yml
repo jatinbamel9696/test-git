@@ -12,7 +12,17 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up GitHub CLI
-      run: gh config set github-token ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if ! command -v gh &> /dev/null; then
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+        fi
+        gh config set token ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
 
     - name: Download Release
       run: |
