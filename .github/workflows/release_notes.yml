@@ -35,10 +35,10 @@ jobs:
     - name: Publish to Confluence
       env:
         LOGIN: jatsingh9696@gmail.com
-        PASSWORD: ATATT3xFfGF0X7DrLhE-8H46tLQtsUMPo1SuTWp4fBnymhCeP6qCs6ukxOAxM9T6GRJ49fu5VOJkS2y_PSnErk1Y0ATnUHQF-3R0N8XkmXpfloE72XvYKSoqQ0zCIT0-Cne3CYMOCLKI5JrQzhKihcyKfqzVVFVRMxRl4WI4yVdZedaBcNBv048=51EE7C43
+        PASSWORD: ATATT3xFfGF0FH9mamNdVhcbRQE0d_LYgO1BJT1t0C3-WldfeBZnr7yCkjrr4vnM-g5AJerVge8cASB9nQ4owra1HhugmijtaRzSkDOu7nGJKlDewMKIBAjtdFNnbAU8KDfMG33-45sV1-iuA2NOWS7C1LDEVUIcQXLUn8-XseowIhPUTNRKmiE=B1CA68AB
         CONFLUENCE_URL: https://jatin-bamel.atlassian.net/wiki/rest/api/
-        CONFLUENCE_SPACE: testj3
-        CONFLUENCE_PARENT_PAGE_ID: 950287
+        CONFLUENCE_SPACE: jatin
+        CONFLUENCE_PARENT_PAGE_ID: 3833948
       run: |
         curl -u "${LOGIN}:${PASSWORD}" -X PUT -H 'Content-Type: application/json' \
           -d '{"version":{"number":your_current_page_version},"title":"Your Page Title","type":"page","body":{"storage":{"value":"$(< confluence_markup.txt)","representation":"storage"}}}' \
