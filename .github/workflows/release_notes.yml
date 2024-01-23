@@ -21,19 +21,21 @@ jobs:
 
     - name: Print Release Notes
       run: cat release_notes.md
-    - name: Set up Confluence API credentials
-      run: |
-        echo "CONFLUENCE_USERNAME=${{ secrets.CONFLUENCE_USERNAME }}" >> $GITHUB_ENV
-        echo "CONFLUENCE_PASSWORD=${{ secrets.CONFLUENCE_PASSWORD }}" >> $GITHUB_EN
 
-    - name: Publish Release Notes to Confluence
+    - name: Install Pandoc
       run: |
-        CONFLUENCE_SPACE=testj3
-        CONFLUENCE_PAGE_ID=950287
-        CONFLUENCE_API_URL="https://jatin-bamel.atlassian.net/wiki/rest/api/content/${CONFLUENCE_PAGE_ID}/child/page"
-        RELEASE_NOTES=$(cat release_notes.md)
-        echo $RELEASE_NOTES
-        JSON_PAYLOAD=$(jq -n --arg body "$RELEASE_NOTES" '{version: 1, type: "page", title: "Latest Release Notes", body: {storage: {value: $body, representation: "storage"}}}')
+        sudo apt-get update
+        sudo apt-get install -y pandoc
 
-        curl -u "${CONFLUENCE_USERNAME}:${CONFLUENCE_PASSWORD}" -X PUT -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${CONFLUENCE_API_URL}"
-   
+    - name: Convert MD to Confluence Markup
+      run: |
+        pandoc -s release_notes.md -o confluence_markup.txt
+        echo test
+        cat confluence_markup.txt
+    - name: Publish to Confluence
+      env:
+        CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_PASSWORD }}
+      run: |
+        curl -u username:${{ secrets.CONFLUENCE_API_TOKEN }} -X PUT -H 'Content-Type: application/json' \
+        -d '{"version":{"number":your_current_page_version},"title":"Your Page Title","type":"page","body":{"storage":{"value":"$(< confluence_markup.txt)","representation":"storage"}}}' \
+        https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287
