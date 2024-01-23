@@ -4,80 +4,29 @@ on:
  workflow_dispatch:
 
 jobs:
-  download-release:
+  fetch-latest-release-notes:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-name: Release
-
-on:
- workflow_dispatch:
-
-jobs:
-  download-release:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
 
     - name: Set up GitHub CLI
+      uses: actions/setup-gh@v1
+      with:
+        gh-version: 2.x
+
+    - name: View latest release and store release notes
       run: |
-        if ! command -v gh &> /dev/null; then
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-          sudo apt-add-repository https://cli.github.com/packages
-          sudo apt-get update
-          sudo apt-get install gh
-        fi
-        gh auth login --with-token "${GITHUB_TOKEN}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        gh release view $(gh release list --limit 1 --json tag_name -q .[].tag_name) --json notes > release.json
+        RELEASE_NOTES=$(jq -r '.[].note' release.json)
+        echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
 
-    - name: Get Release Notes
-      run: |
-        if [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
-          RELEASE_TAG=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
-          RELEASE_NOTES=$(gh release view ${RELEASE_TAG} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
-        else
-          RELEASE_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///')
-          RELEASE_NOTES=$(gh release view ${RELEASE_BRANCH} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
-        fi
+  print-release-notes:
+    needs: fetch-latest-release-notes
+    runs-on: ubuntu-latest
 
-        echo "RELEASE_NOTES=${RELEASE_NOTES}" >> $GITHUB_ENV
-
+    steps:
     - name: Print Release Notes
-      run: |
-        if [ -n "$RELEASE_NOTES" ]; then
-          echo "Release Notes: $RELEASE_NOTES"
-        else
-          echo "Release Notes not available."
-        fi
-
-    - name: Print Message
-      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
-
-    - name: Get Release Notes
-      run: |
-        if [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
-          RELEASE_TAG=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
-          RELEASE_NOTES=$(gh release view ${RELEASE_TAG} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
-        else
-          RELEASE_BRANCH=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///')
-          RELEASE_NOTES=$(gh release view ${RELEASE_BRANCH} --repo $GITHUB_REPOSITORY --json notes --template '{{.body}}')
-        fi
-
-        echo "RELEASE_NOTES=${RELEASE_NOTES}" >> $GITHUB_ENV
-
-    - name: Print Release Notes
-      run: |
-        if [ -n "$RELEASE_NOTES" ]; then
-          echo "Release Notes: $RELEASE_NOTES"
-        else
-          echo "Release Notes not available."
-        fi
-
-    - name: Print Message
-      run: echo "Release downloaded successfully! Check the artifacts for the downloaded file."
+      run: echo "${{ env.RELEASE_NOTES }}"
+   
