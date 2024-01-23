@@ -11,16 +11,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up GitHub CLI
-      uses: actions/setup-gh@v1
-      with:
-        gh-version: 2.x
-
     - name: View latest release and store release notes
       run: |
         gh release view $(gh release list --limit 1 --json tag_name -q .[].tag_name) --json notes > release.json
         RELEASE_NOTES=$(jq -r '.[].note' release.json)
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
 
   print-release-notes:
     needs: fetch-latest-release-notes
