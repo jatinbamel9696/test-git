@@ -34,11 +34,16 @@ jobs:
         cat confluence_markup.txt
     - name: Publish to Confluence
       env:
-        CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_PASSWORD }}
+        LOGIN: jatsingh9696@gmail.com
+        PASSWORD: ATATT3xFfGF0X7DrLhE-8H46tLQtsUMPo1SuTWp4fBnymhCeP6qCs6ukxOAxM9T6GRJ49fu5VOJkS2y_PSnErk1Y0ATnUHQF-3R0N8XkmXpfloE72XvYKSoqQ0zCIT0-Cne3CYMOCLKI5JrQzhKihcyKfqzVVFVRMxRl4WI4yVdZedaBcNBv048=51EE7C43
+        CONFLUENCE_URL: https://jatin-bamel.atlassian.net/wiki/rest/api/
+        CONFLUENCE_SPACE: testj3
+        CONFLUENCE_PARENT_PAGE_ID: 950287
       run: |
-        curl -u "jatsingh9696@gmail.com:ATATT3xFfGF0zZw8dkDtDJ0WiLVVSMi9t-jX7zfhx4BewSOhWvVIVcjRoP7TnpFUhkiENkn5wZIXoytd7pC-u-nUQKxr_Gi6r9ySZfRVSDQb_ayqMycuW4i_7TiNgc1OB6eGsSMdmqLBH7U7k7qvwnelbTi2COmE4Tsi99q-LvejSUMVqVxjYc8=52854431" -X PUT -H 'Content-Type: application/json' \
-        -d '{"version":{"number":your_current_page_version},"title":"Your Page Title","type":"page","body":{"storage":{"value":"$(< confluence_markup.txt)","representation":"storage"}}}' \
-        https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287
+        curl -u "${LOGIN}:${PASSWORD}" -X PUT -H 'Content-Type: application/json' \
+          -d '{"version":{"number":your_current_page_version},"title":"Your Page Title","type":"page","body":{"storage":{"value":"$(< confluence_markup.txt)","representation":"storage"}}}' \
+          "${CONFLUENCE_URL}content/${CONFLUENCE_PARENT_PAGE_ID}/child/${CONFLUENCE_SPACE}"
+
 
 
 
