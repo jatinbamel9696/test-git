@@ -13,8 +13,9 @@ jobs:
 
     - name: View latest release and store release notes
       run: |
-        gh release view $(gh release list --limit 1 --json tag_name -q .[].tag_name) --json notes > release.json
-        RELEASE_NOTES=$(jq -r '.[].note' release.json)
+        latest_tag=$(gh release list --limit 1 --json tag_name -q .[].tag_name)
+        gh release view $latest_tag --json body > release.json
+        RELEASE_NOTES=$(jq -r . body release.json)
         echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
