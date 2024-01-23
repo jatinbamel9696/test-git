@@ -36,8 +36,9 @@ jobs:
       env:
         CONFLUENCE_API_TOKEN: ${{ secrets.CONFLUENCE_PASSWORD }}
       run: |
-        curl -u "jatsingh9696@gmail.com:ATATT3xFfGF0UKmQc20W07Fsk51C1Iqxf2N5NYRZMeOoMMSnHxvAZ9BK1mOr9pPWBZwfaNwW0NnrFPEWAzWMClwh86q6TCzD8ZK-NqJx5NmUKxWnAi4Ff90xH3nJ0h9qNX0PC7PB1MsUXKNoHCEtRcb1Xn-6-sq998V1UWwhxe-84Qo-UP_dwdw=6E175430" -X PUT -H 'Content-Type: application/json' \
+        curl -u "jatsingh9696@gmail.com:ATATT3xFfGF0zZw8dkDtDJ0WiLVVSMi9t-jX7zfhx4BewSOhWvVIVcjRoP7TnpFUhkiENkn5wZIXoytd7pC-u-nUQKxr_Gi6r9ySZfRVSDQb_ayqMycuW4i_7TiNgc1OB6eGsSMdmqLBH7U7k7qvwnelbTi2COmE4Tsi99q-LvejSUMVqVxjYc8=52854431" -X PUT -H 'Content-Type: application/json' \
         -d '{"version":{"number":your_current_page_version},"title":"Your Page Title","type":"page","body":{"storage":{"value":"$(< confluence_markup.txt)","representation":"storage"}}}' \
         https://jatin-bamel.atlassian.net/wiki/rest/api/content/950287
+
 
 
