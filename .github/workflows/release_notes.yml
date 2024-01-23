@@ -21,11 +21,10 @@ jobs:
 
     - name: Print Release Notes
       run: cat release_notes.md
-
     - name: Set up Confluence API credentials
       run: |
-        echo "CONFLUENCE_USERNAME=jatsingh9696@gmail.com" >> $GITHUB_ENV
-        echo "CONFLUENCE_PASSWORD=ATATT3xFfGF0UKmQc20W07Fsk51C1Iqxf2N5NYRZMeOoMMSnHxvAZ9BK1mOr9pPWBZwfaNwW0NnrFPEWAzWMClwh86q6TCzD8ZK-NqJx5NmUKxWnAi4Ff90xH3nJ0h9qNX0PC7PB1MsUXKNoHCEtRcb1Xn-6-sq998V1UWwhxe-84Qo-UP_dwdw=6E175430" >> $GITHUB_ENV
+        echo "CONFLUENCE_USERNAME=${{ secrets.CONFLUENCE_USERNAME }}" >> $GITHUB_ENV
+        echo "CONFLUENCE_PASSWORD=${{ secrets.CONFLUENCE_PASSWORD }}" >> $GITHUB_EN
 
     - name: Publish Release Notes to Confluence
       run: |
@@ -33,6 +32,7 @@ jobs:
         CONFLUENCE_PAGE_ID=950287
         CONFLUENCE_API_URL="https://jatin-bamel.atlassian.net/wiki/rest/api/content/${CONFLUENCE_PAGE_ID}/child/page"
         RELEASE_NOTES=$(cat release_notes.md)
+        echo $RELEASE_NOTES
         JSON_PAYLOAD=$(jq -n --arg body "$RELEASE_NOTES" '{version: 1, type: "page", title: "Latest Release Notes", body: {storage: {value: $body, representation: "storage"}}}')
 
         curl -u "${CONFLUENCE_USERNAME}:${CONFLUENCE_PASSWORD}" -X PUT -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${CONFLUENCE_API_URL}"
