@@ -18,7 +18,7 @@ jobs:
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
         #echo "release_notes.json=$RELEASE_NOTES" >> $GITHUB_ENV
-        echo "RELEASE_NOTES=$GITHUB_WORKSPACE/release_notes.json" >> $GITHUB_ENV
+        echo "release_notes.json=release_notes.json" >> $GITHUB_ENV
     
     - uses: actions/checkout@v2
       with:
@@ -29,7 +29,8 @@ jobs:
 
     - name: edit wiki
       run: |
-        cp $GITHUB_WORKSPACE/release_notes.json .
+        ls -al
+        cp $release_notes.json .
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
