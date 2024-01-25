@@ -17,6 +17,11 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
+
+    - name: Set up Git user information
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
       
     - name: Commit and push to Git wiki
       run: |
