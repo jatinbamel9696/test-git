@@ -18,7 +18,7 @@ jobs:
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
         ls -al
-        cp release_notes.json ${{ github.workspace }}
+        echo "RELEASE_NOTES=$(cat release_notes.json)" >> $GITHUB_ENV
         cd ${{ github.workspace }} 
         ls -la
         pwd
@@ -34,8 +34,12 @@ jobs:
     - name: check wiki repo content
       run: |
         ls -al
+    - name: Use GitHub variable
+      run: |
+        echo "Release notes: $RELEASE_NOTES"
     - name: Debugging
       run: |
+        echo "$RELEASE_NOTES" > release_notes.json
         ls -al
         echo "Path to release_notes.json: /home/runner/work/test-git/test-git/release_notes.json"
         echo "Contents of the workspace directory:"
@@ -44,7 +48,7 @@ jobs:
       run: |
         ls -al
         #cat $RELEASE_NOTES >> release_notes.json
-        cp "${{ github.workspace }}/release_notes.json" .
+        cp "release_notes.json" .
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
