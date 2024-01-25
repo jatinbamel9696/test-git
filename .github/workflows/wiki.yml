@@ -25,7 +25,7 @@ jobs:
       
     - name: Commit and push to Git wiki
       run: |
-        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
+        git clone https://github.com/jatinbamel9696/test-git.wiki.git
         cd wiki
         git pull origin master || true
         cd ..
@@ -35,7 +35,7 @@ jobs:
         
         # Commit changes
         cd wiki
-        git add release_notes.json
+        git add .
         git status
         git commit -m "Update release notes"
         git status
