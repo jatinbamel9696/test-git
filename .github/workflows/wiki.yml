@@ -19,7 +19,7 @@ jobs:
           > release_notes.json
         RELEASE_NOTES=$(cat release_notes.json)
         echo $RELEASE_NOTES
-        echo "RELEASE_NOTES=$RELEASE_NOTES" >>$GITHUB_ENV
+        #echo "RELEASE_NOTES=$RELEASE_NOTES" >>$GITHUB_ENV
         #echo "release_notes.json=$RELEASE_NOTES" >> $GITHUB_ENV
         #echo "release_notes.json=$release_notes.json" >> $GITHUB_ENV
     
