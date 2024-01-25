@@ -18,6 +18,9 @@ jobs:
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
         ls -al
+        cp release_notes.json ${{ github.workspace }}
+        cd ${{ github.workspace }} 
+        ls -la
         pwd
         RELEASE_NOTES=$(cat release_notes.json)
         echo $RELEASE_NOTES
