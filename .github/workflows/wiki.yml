@@ -1,0 +1,34 @@
+name: Save Release Notes to Git Wiki
+
+on:
+  workflow_dispatch:
+
+jobs:
+  save-release-notes:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Fetch release notes
+      run: |
+        # Use GitHub API to fetch release notes and save to a file
+        curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
+          > release_notes.json
+      
+    - name: Commit and push to Git wiki
+      run: |
+        # Set up Git user information
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        
+        # Add release notes file
+        git add release_notes.json
+        
+        # Commit changes
+        git commit -m "Update release notes"
+        
+        # Push changes to Git wiki repository
+        git push origin main
