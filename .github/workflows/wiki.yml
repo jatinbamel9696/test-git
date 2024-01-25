@@ -36,7 +36,8 @@ jobs:
         # Commit changes
         cd wiki
         git add release_notes.json
-        git commit -m "Update release notes" --author="GitHub Actions <actions@github.com>"
-        
+        git status
+        git commit -m "Update release notes"
+        git status
         # Push changes to Git wiki repository
         git push origin master
