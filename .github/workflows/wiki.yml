@@ -17,6 +17,8 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
+        ls -al
+        pwd
         RELEASE_NOTES=$(cat release_notes.json)
         echo $RELEASE_NOTES
         #echo "RELEASE_NOTES=$RELEASE_NOTES" >>$GITHUB_ENV
@@ -29,7 +31,12 @@ jobs:
     - name: check wiki repo content
       run: |
         ls -al
-
+    - name: Debugging
+      run: |
+        ls -al
+        echo "Path to release_notes.json: /home/runner/work/test-git/test-git/release_notes.json"
+        echo "Contents of the workspace directory:"
+        ls -al "${{ github.workspace }}"
     - name: edit wiki
       run: |
         ls -al
