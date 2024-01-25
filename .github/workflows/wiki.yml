@@ -17,6 +17,7 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
+        echo "release_notes.json=$RELEASE_NOTES" >> $GITHUB_ENV
     
     - uses: actions/checkout@v2
       with:
@@ -27,7 +28,7 @@ jobs:
 
     - name: edit wiki
       run: |
-        cp release_notes.json .
+        cp $RELEASE_NOTES .
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
