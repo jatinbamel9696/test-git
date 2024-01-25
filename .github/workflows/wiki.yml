@@ -25,7 +25,7 @@ jobs:
       
     - name: Commit and push to Git wiki
       run: |
-        git clone https://github.com/jatinbamel9696/test-git.wiki.git
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
         cd wiki
         git pull origin master || true
         cd ..
@@ -40,4 +40,4 @@ jobs:
         git commit -m "Update release notes"
         git status
         # Push changes to Git wiki repository
-        git push origin master
+        git push "https://${{ secrets.GIT_PAT }}@github.com/${{ github.repository }}.wiki.git" master
