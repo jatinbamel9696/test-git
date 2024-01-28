@@ -11,31 +11,22 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       
-    - name: Fetch release notes
+    # - name: Fetch release notes
+    #   run: |
+    #     # Use GitHub API to fetch release notes and save to a file
+    #     curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+    #       "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
+    #       > release_notes.json
+    - name: Fetch release body
       run: |
-        # Use GitHub API to fetch release notes and save to a file
-        curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
-          > release_notes.json
-    - name: Commit and push to Git wiki
+          # Use GitHub API to fetch release notes and save to a file
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
+            > release_notes.json
+          # Use jq to extract the body from the JSON file and save it to another file
+          jq -r '.body' release_notes.json > release_notes_body.md
+          
+    - name: Release body
       run: |
-        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
-        cd wiki
-        git pull origin master || true
-        cd ..
-        
-        # Copy release notes to wiki
-        cp release_notes.json wiki/
-        
-        # Commit changes
-        cd wiki
-        git add .
-        git status
-        git commit -m "Update release notes"
-    - name: Push changes to wiki repo
-      uses: ad-m/github-push-action@master
-      with:
-        repository: ${{github.repository}}.wiki    # specify the wiki repo and push the update.
-        github_token: ${{ secrets.GITHUB_TOKEN }}  
-    
+        cat release_notes_body.md
     
