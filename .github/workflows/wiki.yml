@@ -17,40 +17,25 @@ jobs:
         curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository }}/releases/latest" \
           > release_notes.json
-          
-    - name: Set GitHub variable
-      env:
-        RELEASE_NOTES: $(cat release_notes.json)
-    
-    - uses: actions/checkout@v2
-      with:
-        repository: ${{github.repository}}.wiki
-    - name: check wiki repo content
+    - name: Commit and push to Git wiki
       run: |
-        ls -al
-    - name: Use GitHub variable
-      run: |
-        echo "Release notes: $RELEASE_NOTES"
-    - name: Debugging
-      run: |
-        echo "$RELEASE_NOTES" > release_notes.json
-        ls -al
-        echo "Path to release_notes.json: /home/runner/work/test-git/test-git/release_notes.json"
-        echo "Contents of the workspace directory:"
-        ls -al "${{ github.workspace }}"
-    - name: edit wiki
-      run: |
-        ls -al
-        #cat $RELEASE_NOTES >> release_notes.json
-        cp "release_notes.json" .
-    - name: Commit files
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
+        cd wiki
+        git pull origin master || true
+        cd ..
+        
+        # Copy release notes to wiki
+        cp release_notes.json wiki/
+        
+        # Commit changes
+        cd wiki
         git add .
-        git commit -m "Add changes"
+        git status
+        git commit -m "Update release notes"
     - name: Push changes to wiki repo
       uses: ad-m/github-push-action@master
       with:
         repository: ${{github.repository}}.wiki    # specify the wiki repo and push the update.
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}  
+    
+    
