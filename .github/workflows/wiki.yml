@@ -64,10 +64,11 @@ jobs:
         git config --local user.name "GitHub Action"
         git add .
         git commit -m "Add changes"
-        git push 
+       
 
-    # - name: Push changes to wiki repo
-    #   uses: ad-m/github-push-action@master
-    #   with:
-    #     repository: ${{ github.repository }}.wiki
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Push changes to wiki repo
+      uses: ad-m/github-push-action@master
+      with:
+        #repository: ${{ github.repository }}.wiki
+        repository: https://github.com/jatinbamel9696/test-git.wiki.git
+        github_token: ${{ secrets.GITHUB_TOKEN }}
