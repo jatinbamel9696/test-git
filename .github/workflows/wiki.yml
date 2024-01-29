@@ -57,18 +57,24 @@ jobs:
     # - name: Edit wiki
     #   run: |
     #     cp "${{ github.workspace }}/release_notes_body.md" . # Copy the release_notes_body.md file to the current directory
-
-    - name: Commit files
+    - name: Push to wiki
       run: |
+        cd "${{ github.workspace }}"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add .
-        git commit -m "Add changes"
+        git diff-index --quiet HEAD || git commit -m "Add changes" && git push
+    # - name: Commit files
+    #   run: |
+    #     git config --local user.email "action@github.com"
+    #     git config --local user.name "GitHub Action"
+    #     git add .
+    #     git commit -m "Add changes"
        
 
-    - name: Push changes to wiki repo
-      uses: ad-m/github-push-action@master
-      with:
-        #repository: ${{ github.repository }}.wiki
-        repository: https://github.com/jatinbamel9696/test-git.wiki.git
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Push changes to wiki repo
+    #   uses: ad-m/github-push-action@master
+    #   with:
+    #     #repository: ${{ github.repository }}.wiki
+    #     repository: https://github.com/jatinbamel9696/test-git.wiki.git
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
