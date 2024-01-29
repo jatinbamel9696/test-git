@@ -1,5 +1,7 @@
 on:
   workflow_dispatch:
+  release:
+    types: [published, edited]
 
 jobs:
   save-release-notes-and-push-to-wiki:
