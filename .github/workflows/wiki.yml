@@ -29,6 +29,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        repository: ${{github.repository}}.wiki
 
     - name: Download release notes artifact
       uses: actions/download-artifact@v2
