@@ -1,3 +1,4 @@
+name: Update Release Notes and Push to Wiki
 on:
   release:
     types: [published, edited, prereleased]
