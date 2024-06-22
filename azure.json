@@ -17,7 +17,7 @@
         "task": "Image deployment"
       },
       "location": "Central India",
-      "vm_size": "Standard_B1s"
+      "vm_size": "Standard_B1s",
       "ssh_username": "jatin",
       "ssh_password": "india@123"
     }
