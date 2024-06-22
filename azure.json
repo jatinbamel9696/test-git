@@ -10,16 +10,16 @@
       "managed_image_name": "myPackerImage",
       "os_type": "Linux",
       "image_publisher": "canonical",
-      "image_offer": "0001-com-ubuntu-server-jammy",
-      "image_sku": "22_04-lts",
+      "image_offer": "UbuntuServer",
+      "image_sku": "20.04-LTS"
       "azure_tags": {
         "dept": "Engineering",
         "task": "Image deployment"
       },
       "location": "Central India",
       "vm_size": "Standard_B1s",
-      "ssh_username": "jatin",
-      "ssh_password": "india@123"
+      "ssh_username": "ubuntu",
+      "ssh_password": "india@12345"
     }
   ],
   "provisioners": [
