@@ -8,30 +8,33 @@
       "subscription_id": "{{user `subscription_id`}}",
       "managed_image_resource_group_name": "{{user `resource_group_name`}}",
       "managed_image_name": "myPackerImage",
-      "os_type": "Linux",
-      "image_publisher": "canonical",
-      "image_offer": "UbuntuServer",
-      "image_sku": "20.04-LTS",
+      "os_type": "Windows",
+      "image_publisher": "MicrosoftWindowsServer",
+      "image_offer": "WindowsServer",
+      "image_sku": "2016-Datacenter",
+      "communicator": "winrm",
+      "winrm_use_ssl": true,
+      "winrm_insecure": true,
+      "winrm_timeout": "5m",
+      "winrm_username": "packer",
       "azure_tags": {
         "dept": "Engineering",
         "task": "Image deployment"
       },
-      "location": "Central India",
-      "vm_size": "Standard_B1s",
-      "ssh_username": "ubuntu",
-      "ssh_password": "india@12345"
+      "build_resource_group_name": "myPackerGroup",
+      "vm_size": "Standard_D2_v2"
     }
   ],
   "provisioners": [
     {
-      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+      "type": "powershell",
       "inline": [
-        "apt-get update",
-        "apt-get upgrade -y",
-        "apt-get -y install nginx"
-      ],
-      "inline_shebang": "/bin/sh -x",
-      "type": "shell"
+        "Add-WindowsFeature Web-Server",
+        "while ((Get-Service RdAgent).Status -ne 'Running') { Start-Sleep -s 5 }",
+        "while ((Get-Service WindowsAzureGuestAgent).Status -ne 'Running') { Start-Sleep -s 5 }",
+        "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit",
+        "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select-Object -ExpandProperty ImageState; if($imageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState; Start-Sleep -s 10 } else { break } }"
+      ]
     }
   ]
 }
