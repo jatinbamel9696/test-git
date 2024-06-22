@@ -21,7 +21,7 @@
         "dept": "Engineering",
         "task": "Image deployment"
       },
-      "build_resource_group_name": "test-j3",
+      "build_resource_group_name": "test-az",
       "vm_size": "Standard_B1s"
     }
   ],
