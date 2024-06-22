@@ -1,19 +1,32 @@
 {
-  "builders": [{
-    "type": "azure-arm",
-    "client_id": "{{user `client_id`}}",
-    "client_secret": "{{user `client_secret`}}",
-    "tenant_id": "{{user `tenant_id`}}",
-    "subscription_id": "{{user `subscription_id`}}",
-    "managed_image_resource_group_name": "myResourceGroup",
-    "managed_image_name": "myPackerImage",
-    "location": "East US",
-    "vm_size": "Standard_DS2_v2"
-  }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
-      "echo Hello, World!"
-    ]
-  }]
+  "builders": [
+    {
+      "type": "azure-arm",
+
+      "client_id": "{{user `client_id`}}",
+      "client_secret": "{{user `client_secret`}}",
+      "tenant_id": "{{user `tenant_id`}}",
+      "subscription_id": "{{user `subscription_id`}}",
+
+      "managed_image_resource_group_name": "{{user `resource_group_name`}}",
+      "managed_image_name": "packer-linux-vm-image",
+      "location": "Central India",
+      "os_type": "Linux",
+      "image_publisher": "Canonical",
+      "image_offer": "UbuntuServer",
+      "image_sku": "20.04-LTS",
+
+      "vm_size": "Standard_DS1_v2"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "sudo apt-get install -y nginx"
+      ]
+    }
+  ]
 }
