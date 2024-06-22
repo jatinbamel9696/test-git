@@ -18,6 +18,8 @@
       },
       "location": "Central India",
       "vm_size": "Standard_B1s"
+      "ssh_username": "jatin",
+      "ssh_password": "india@123"
     }
   ],
   "provisioners": [
@@ -26,8 +28,7 @@
       "inline": [
         "apt-get update",
         "apt-get upgrade -y",
-        "apt-get -y install nginx",
-        "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+        "apt-get -y install nginx"
       ],
       "inline_shebang": "/bin/sh -x",
       "type": "shell"
