@@ -16,8 +16,8 @@
         "dept": "Engineering",
         "task": "Image deployment"
       },
-      "location": "East US",
-      "vm_size": "Standard_DS2_v2"
+      "location": "Central India",
+      "vm_size": "Standard_B1s"
     }
   ],
   "provisioners": [
